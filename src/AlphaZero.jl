@@ -176,6 +176,7 @@ module AlphaZero
   include("scripts/scripts.jl")
   export Scripts
 
+  #=
   function __init__()
     # OpenSpiel.jl Wrapper
     @require OpenSpiel="ceb70bd2-fe3f-44f0-b81f-41608acaf2f2" begin
@@ -185,6 +186,6 @@ module AlphaZero
       @info "AlphaZero.jl's OpenSpielWrapper loaded."
     end
   end
-
+  =#
 
 end
