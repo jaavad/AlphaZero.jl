@@ -57,15 +57,21 @@ GI.two_players(::GameSpec) = true
 
 GI.actions(::GameSpec) = CartesianIndices((NUM_ROWS,NUM_COLS))
 
+flip_cell_color(c::Cell) = (0 < c < 3) ? c : other(c)
 
+flip_colors(board::Board) = flip_cell_color.(board)
 
 function GI.vectorize_state(::GameSpec, state)
-  tmp = zeros(Float32,NUM_CELLS + 4)
-  tmp[1:NUM_CELLS] = state.board[:]
-  tmp[NUM_CELLS+1] = state.curplayer
-  tmp[NUM_CELLS+2] = state.phase
-  tmp[NUM_CELLS+3] = state.selected.I[0]
-  tmp[NUM_CELLS+4] = state.selected.I[1]
+  tmp = zeros(Float32,NUM_ROWS,NUM_COLS,6)
+  board = state.curplayer == WHITE ? state.board : flip_colors(state.board)
+  for i = 1:3
+    tmp[:,:,i] = board .== i
+  end
+  if state.phase == 0
+    tmp[:,:,4] = tmp[:,:,1]
+  else
+    tmp[:,:,state.phase+4] = get_queen_moves(board,state.selected)
+  end
   return tmp
 end
 

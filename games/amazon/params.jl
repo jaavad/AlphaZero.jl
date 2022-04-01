@@ -18,7 +18,7 @@ self_play = SelfPlayParams(
     num_workers=128,
     batch_size=64,
     use_gpu=true,
-    reset_every=2,
+    reset_every=3,
     flip_probability=0.,
     alternate_colors=false),
   mcts=MctsParams(
@@ -27,7 +27,7 @@ self_play = SelfPlayParams(
     prior_temperature=1.0,
     temperature=PLSchedule([0, 20, 30], [1.0, 1.0, 0.3]),
     dirichlet_noise_ϵ=0.25,
-    dirichlet_noise_α=1.0))
+    dirichlet_noise_α=0.3))
 
 arena = ArenaParams(
   sim=SimParams(
@@ -35,8 +35,8 @@ arena = ArenaParams(
     num_workers=128,
     batch_size=128,
     use_gpu=true,
-    reset_every=2,
-    flip_probability=0.5,
+    reset_every=3,
+    flip_probability=1.0,
     alternate_colors=true),
   mcts=MctsParams(
     self_play.mcts,
@@ -107,5 +107,5 @@ benchmark = [
 ##### Wrapping up in an experiment
 #####
 
-experiment = Experiment("connect-four",
+experiment = Experiment("amazon",
   GameSpec(), params, Network, netparams, benchmark)

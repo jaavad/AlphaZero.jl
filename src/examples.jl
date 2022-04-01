@@ -31,7 +31,8 @@ module Examples
     "grid-world" => GridWorld.Training.experiment,
     "tictactoe" => Tictactoe.Training.experiment,
     "connect-four" => ConnectFour.Training.experiment,
-    "mancala" => Mancala.Training.experiment)
+    "mancala" => Mancala.Training.experiment,
+    "amazon" => Amazon.Training.experiment)
     #TODO:add Amazon.Training.experiment
     # "ospiel_ttt" => OSpielTictactoe.Training.experiment
 
