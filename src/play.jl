@@ -310,6 +310,7 @@ function play_game(gspec, player; flip_probability=0.)
     π_sample = apply_temperature(π_target, τ)
     a = actions[Util.rand_categorical(π_sample)]
     GI.play!(game, a)
+    #GI.render(game)
     push!(trace, π_target, GI.white_reward(game), GI.current_state(game))
   end
 end

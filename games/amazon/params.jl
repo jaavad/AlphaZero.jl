@@ -22,7 +22,7 @@ self_play = SelfPlayParams(
     flip_probability=0.,
     alternate_colors=false),
   mcts=MctsParams(
-    num_iters_per_turn=600,
+    num_iters_per_turn=200,
     cpuct=2.0,
     prior_temperature=1.0,
     temperature=PLSchedule([0, 20, 30], [1.0, 1.0, 0.3]),
@@ -36,7 +36,7 @@ arena = ArenaParams(
     batch_size=128,
     use_gpu=true,
     reset_every=3,
-    flip_probability=1.0,
+    flip_probability=0.0,
     alternate_colors=true),
   mcts=MctsParams(
     self_play.mcts,

@@ -27,7 +27,7 @@ other(p::Player) = 0x03 - p
        
 
 const INITIAL_BOARD = SMatrix{NUM_COLS,NUM_ROWS}(Player.(tmp))
-const INITIAL_STATE = (board=INITIAL_BOARD, curplayer=WHITE, phase=0x00,selected=CartesianIndex(-1,-1))
+const INITIAL_STATE = (board=INITIAL_BOARD, curplayer=WHITE, phase=0x00,selected=0x00)
 
 struct GameSpec <: GI.AbstractGameSpec end
 
@@ -38,7 +38,8 @@ mutable struct GameEnv <: GI.AbstractGameEnv
   finished :: Bool
   winner :: Player
   phase :: UInt8
-  selected :: CartesianIndex{2}
+  selected :: UInt8
+  #selected works as long as size of board is not too big
 end
 
 GI.spec(::GameEnv) = GameSpec()
@@ -55,7 +56,7 @@ end
 
 GI.two_players(::GameSpec) = true
 
-GI.actions(::GameSpec) = CartesianIndices((NUM_ROWS,NUM_COLS))[:]
+GI.actions(::GameSpec) = collect(1:NUM_CELLS)
 
 flip_cell_color(c::Cell) = (0 < c < 3) ? c : other(c)
 
@@ -104,7 +105,8 @@ GI.game_terminated(g::GameEnv) = g.finished
 
 GI.white_playing(g::GameEnv) = g.curplayer == WHITE
 
-function get_queen_moves(b::Board,loc::CartesianIndex{2})
+function get_queen_moves(b::Board,loc_linear)
+  loc = CartesianIndex(xy_of_pos(loc_linear))
   valid_moves = falses(size(b))
   for dir∈CartesianIndex.([(-1,-1),(-1,0),(-1,1),(0,1),(1,1),(1,0),(1,-1),(0,-1)])
     for i=1:max(size(b)...)
@@ -141,7 +143,7 @@ function GI.play!(g::GameEnv, a)
   else
     g.board = Base.setindex(g.board,3,a)
     g.curplayer = other(g.curplayer)
-    g.selected = CartesianIndex(-1,-1)
+    g.selected = 0x00
   end
   g.phase = (g.phase+1)%3
 end
