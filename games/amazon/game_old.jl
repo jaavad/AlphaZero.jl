@@ -55,7 +55,7 @@ end
 
 GI.two_players(::GameSpec) = true
 
-GI.actions(::GameSpec) = CartesianIndices((NUM_ROWS,NUM_COLS))[:]
+GI.actions(::GameSpec) = CartesianIndices((NUM_ROWS,NUM_COLS))
 
 flip_cell_color(c::Cell) = (0 < c < 3) ? c : other(c)
 
@@ -116,12 +116,12 @@ function get_queen_moves(b::Board,loc::CartesianIndex{2})
       end
     end
   end
-  return valid_moves[:]
+  return valid_moves
 end
 
 function GI.actions_mask(g::GameEnv)
   if g.phase == 0
-    return (g.board .== g.curplayer)[:]
+    return g.board .== g.curplayer
   else
     return get_queen_moves(g.board,g.selected)
   end
@@ -248,7 +248,6 @@ function GI.parse_action(::GameSpec, str)
   end
 end
 
-#=
 function GI.read_state(::GameSpec)
   board = Array(INITIAL_BOARD)
   try
@@ -278,4 +277,4 @@ function GI.read_state(::GameSpec)
   end
 end
 
-=#
+
