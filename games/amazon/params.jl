@@ -6,7 +6,7 @@ Network = NetLib.ResNet
 
 netparams = NetLib.ResNetHP(
   num_filters=128,
-  num_blocks=10,
+  num_blocks=5,
   conv_kernel_size=(3, 3),
   num_policy_head_filters=32,
   num_value_head_filters=32,
@@ -22,7 +22,7 @@ self_play = SelfPlayParams(
     flip_probability=0.,
     alternate_colors=false),
   mcts=MctsParams(
-    num_iters_per_turn=200,
+    num_iters_per_turn=600,
     cpuct=2.0,
     prior_temperature=1.0,
     temperature=PLSchedule([0, 20, 30], [1.0, 1.0, 0.3]),
@@ -48,7 +48,7 @@ learning = LearningParams(
   use_gpu=true,
   use_position_averaging=true,
   samples_weighing_policy=LOG_WEIGHT,
-  batch_size=1024,
+  batch_size=256,
   loss_computation_batch_size=1024,
   optimiser=Adam(lr=2e-3),
   l2_regularization=1e-4,
@@ -63,7 +63,7 @@ params = Params(
   learning=learning,
   num_iters=15,
   ternary_rewards=true,
-  use_symmetries=true,
+  use_symmetries=false,
   memory_analysis=nothing,
   mem_buffer_size=PLSchedule(
   [      0,        15],

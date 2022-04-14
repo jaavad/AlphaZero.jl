@@ -31,14 +31,14 @@ Int.(GI.vectorize_state(gs,GI.current_state(g))[:,:,6])
 =#
 
 
-#cd("/home/davidyang/Documents/gitclones/AlphaZero.jl")
-cd("/home/david/Documents/gitclones/AlphaZero.jl")
+cd("/home/davidyang/Documents/gitclones/AlphaZero.jl")
+#cd("/home/david/Documents/gitclones/AlphaZero.jl")
 using Pkg
 Pkg.activate(".")
 using AlphaZero
 experiment = Examples.experiments["amazon"]
 session = Session(experiment, dir="sessions/amazon")
-#resume!(session)
+resume!(session)
 
 
 
