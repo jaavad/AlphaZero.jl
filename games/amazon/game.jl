@@ -58,7 +58,7 @@ GI.two_players(::GameSpec) = true
 
 GI.actions(::GameSpec) = collect(1:NUM_CELLS)
 
-flip_cell_color(c::Cell) = (0 < c < 3) ? c : other(c)
+flip_cell_color(c::Cell) = (0 < c < 3) ? other(c) : c
 
 flip_colors(board::Board) = flip_cell_color.(board)
 

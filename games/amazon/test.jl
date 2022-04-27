@@ -33,11 +33,14 @@ Int.(GI.vectorize_state(gs,GI.current_state(g))[:,:,6])
 
 cd("/home/davidyang/Documents/gitclones/AlphaZero.jl")
 #cd("/home/david/Documents/gitclones/AlphaZero.jl")
+#@everywhere using Pkg
+#@everywhere Pkg.activate(".")
+#@everywhere using AlphaZero
 using Pkg
 Pkg.activate(".")
 using AlphaZero
 experiment = Examples.experiments["amazon"]
-session = Session(experiment, dir="sessions/amazon")
+session = Session(experiment, dir="sessions/amazon2")
 resume!(session)
 
 
@@ -62,7 +65,7 @@ spawn_oracles, done =
     AlphaZero.batchify_oracles(oracles; duel1.sim.num_workers, duel1.sim.batch_size, duel1.sim.fill_batches)
 
 println("debugging play game")
-trace = play_game(env.gspec, simulator.make_player(oracles), flip_probability=1.0)
+trace = @time play_game(env.gspec, simulator.make_player(oracles), flip_probability=0.0)
 
 
 flip_probability = 0.0

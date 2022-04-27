@@ -14,15 +14,15 @@ netparams = NetLib.ResNetHP(
 
 self_play = SelfPlayParams(
   sim=SimParams(
-    num_games=5000,
-    num_workers=128,
-    batch_size=64,
+    num_games=1024,
+    num_workers=32,
+    batch_size=32,
     use_gpu=true,
     reset_every=2,
     flip_probability=0.,
     alternate_colors=false),
   mcts=MctsParams(
-    num_iters_per_turn=600,
+    num_iters_per_turn=200,
     cpuct=2.0,
     prior_temperature=1.0,
     temperature=PLSchedule([0, 20, 30], [1.0, 1.0, 0.3]),
@@ -32,8 +32,8 @@ self_play = SelfPlayParams(
 arena = ArenaParams(
   sim=SimParams(
     num_games=128,
-    num_workers=128,
-    batch_size=128,
+    num_workers=32,
+    batch_size=32,
     use_gpu=true,
     reset_every=2,
     flip_probability=0.0,
@@ -48,8 +48,8 @@ learning = LearningParams(
   use_gpu=true,
   use_position_averaging=true,
   samples_weighing_policy=LOG_WEIGHT,
-  batch_size=256,
-  loss_computation_batch_size=1024,
+  batch_size=128,
+  loss_computation_batch_size=128,
   optimiser=Adam(lr=2e-3),
   l2_regularization=1e-4,
   nonvalidity_penalty=1.,
@@ -61,13 +61,13 @@ params = Params(
   arena=arena,
   self_play=self_play,
   learning=learning,
-  num_iters=15,
+  num_iters=45,
   ternary_rewards=true,
-  use_symmetries=true,
+  use_symmetries=false,
   memory_analysis=nothing,
   mem_buffer_size=PLSchedule(
-  [      0,        15],
-  [400_000, 1_000_000]))
+  [      0,        30],
+  [50000, 180000]))
 
 #####
 ##### Evaluation benchmark
@@ -91,10 +91,10 @@ network_player = Benchmark.NetworkOnly(τ=0.5)
 
 benchmark_sim = SimParams(
   arena.sim;
-  num_games=256,
-  num_workers=256,
-  batch_size=256,
-  alternate_colors=false)
+  num_games=128,
+  num_workers=64,
+  batch_size=64,
+  alternate_colors=true)
 
 benchmark = [
   Benchmark.Duel(alphazero_player, mcts_baseline,   benchmark_sim),

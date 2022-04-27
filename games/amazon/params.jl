@@ -14,11 +14,11 @@ netparams = NetLib.ResNetHP(
 
 self_play = SelfPlayParams(
   sim=SimParams(
-    num_games=5000,
-    num_workers=128,
-    batch_size=64,
+    num_games=1024,
+    num_workers=32,
+    batch_size=32,
     use_gpu=true,
-    reset_every=3,
+    reset_every=6,
     flip_probability=0.,
     alternate_colors=false),
   mcts=MctsParams(
@@ -32,10 +32,10 @@ self_play = SelfPlayParams(
 arena = ArenaParams(
   sim=SimParams(
     num_games=128,
-    num_workers=128,
-    batch_size=128,
+    num_workers=32,
+    batch_size=32,
     use_gpu=true,
-    reset_every=3,
+    reset_every=6,
     flip_probability=0.0,
     alternate_colors=true),
   mcts=MctsParams(
@@ -48,8 +48,8 @@ learning = LearningParams(
   use_gpu=true,
   use_position_averaging=true,
   samples_weighing_policy=LOG_WEIGHT,
-  batch_size=256,
-  loss_computation_batch_size=1024,
+  batch_size=128,
+  loss_computation_batch_size=128,
   optimiser=Adam(lr=2e-3),
   l2_regularization=1e-4,
   nonvalidity_penalty=1.,
@@ -66,8 +66,8 @@ params = Params(
   use_symmetries=false,
   memory_analysis=nothing,
   mem_buffer_size=PLSchedule(
-  [      0,        15],
-  [400_000, 1_000_000]))
+  [      0,        30],
+  [150000, 540000]))
 
 #####
 ##### Evaluation benchmark
@@ -91,9 +91,9 @@ network_player = Benchmark.NetworkOnly(τ=0.5)
 
 benchmark_sim = SimParams(
   arena.sim;
-  num_games=256,
-  num_workers=256,
-  batch_size=256,
+  num_games=128,
+  num_workers=64,
+  batch_size=64,
   alternate_colors=false)
 
 benchmark = [

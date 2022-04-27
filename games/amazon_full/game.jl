@@ -52,7 +52,7 @@ end
 
 GI.two_players(::GameSpec) = true
 
-GI.actions(::GameSpec) = collect(1:36^3)
+GI.actions(::GameSpec) = collect(1:9412)
 #=
 15,15,15,15,15,15
 15,17,17,17,17,15
@@ -70,7 +70,7 @@ So the total number of moves is
 =#
 
 
-flip_cell_color(c::Cell) = (0 < c < 3) ? c : other(c)
+flip_cell_color(c::Cell) = (0 < c < 3) ? other(c) : c
 
 flip_colors(board::Board) = flip_cell_color.(board)
 
@@ -98,25 +98,19 @@ function GI.set_state!(g::GameEnv, state)
   return
 end
 
-GI.current_state(g::GameEnv) = 
-  (board=g.board, curplayer=g.curplayer)
-
+GI.current_state(g::GameEnv) = (board=g.board, curplayer=g.curplayer)
 
 # TODO: maybe MCTS should make the copy itself. The performance cost should not be great
 # and it would probably avoid people a lot of pain.
-
 
 GI.game_terminated(g::GameEnv) = g.finished
 
 GI.white_playing(g::GameEnv) = g.curplayer == WHITE
 
-function get_queen_moves(b::Board,loc_linear)
-  valid_moves = falses(length(b))
-  get_queen_moves!(b,loc_linear,valid_moves)
-  return valid_moves
-end
-
 const DIRECTIONS = CartesianIndex.([(-1,-1),(-1,0),(-1,1),(0,1),(1,1),(1,0),(1,-1),(0,-1)])
+
+pos_of_xy((x, y)) = (y - 1) * NUM_COLS + (x - 1) + 1
+xy_of_pos(pos) = ((pos - 1) % NUM_COLS + 1, (pos - 1) ÷ NUM_COLS + 1)
 
 function get_queen_moves!(b,loc_linear,container)
   loc = CartesianIndex(xy_of_pos(loc_linear))
@@ -131,6 +125,12 @@ function get_queen_moves!(b,loc_linear,container)
       end
     end
   end
+end
+
+function get_queen_moves(b::Board,loc_linear)
+  valid_moves = falses(length(b))
+  get_queen_moves!(b,loc_linear,valid_moves)
+  return valid_moves
 end
 
 function precompute_mask()
@@ -156,39 +156,52 @@ function precompute_mask()
   return mask
 end
 
-const MOVES_CONTAINER = falses(NUM_ROWS,NUM_COLS)
-const SHOOTS_CONTAINER = falses(NUM_ROWS,NUM_COLS)
-const BOARD_REPLICA = zeros(Cell,NUM_ROWS,NUM_COLS)
+const PRECOMPUTED_MASK = precompute_mask()
+const NON_ZERO_LOCS = findall(!iszero,PRECOMPUTED_MASK)
+
+#=
+Because of the representation, the matrix is 36^3=46656, but there are only 9412 valid moves
+So the strategy is, given a state, find the valid moves, fill them into the 36^3 matrix, which has better representation
+but lower efficiency. Most of the entries will always be zero, so filter them out using a precomputed mask.
+
+Inversely, given a number x between 1:9412, find the location of the xth non-zero entry in the precomputed mask
+=#
 
 function GI.actions_mask(g::GameEnv)
-  mask = falses(36*36*36)
-  tmp = reshape(mask,36,36,36)
-  for i=1:36
-    BOARD_REPLICA[i] = g.board[i]
+  moves = falses(NUM_ROWS,NUM_COLS)
+  shoots = falses(NUM_ROWS,NUM_COLS)
+  board = zeros(Cell,NUM_ROWS,NUM_COLS)
+  mask = falses(NUM_CELLS^3)
+  tmp = reshape(mask,NUM_CELLS,NUM_CELLS,NUM_CELLS)
+  for i=1:NUM_CELLS
+    board[i] = g.board[i]
   end
-  for i=1:36
-    BOARD_REPLICA[i]!=g.curplayer && continue
-    fill!(MOVES_CONTAINER,false)
-    get_queen_moves!(BOARD_REPLICA,i,MOVES_CONTAINER)
-    for j=1:36
-      !MOVES_CONTAINER[j] && continue 
-      fill!(SHOOTS_CONTAINER,false)
+  for i=1:NUM_CELLS
+    board[i]!=g.curplayer && continue
+    fill!(moves,false)
+    get_queen_moves!(board,i,moves)
+    for j=1:NUM_CELLS
+      !moves[j] && continue 
+      fill!(shoots,false)
       #don't forget in this case, the amazon could shoot
       #to where it came from. So temporarily delete the current
       #piece, and then add it back
-      BOARD_REPLICA[i]=0x00
-      get_queen_moves!(BOARD_REPLICA,j,SHOOTS_CONTAINER)
-      BOARD_REPLICA[i]=g.curplayer
-      for k=1:36
-        !SHOOTS_CONTAINER[k] && continue
+      board[i]=0x00
+      get_queen_moves!(board,j,shoots)
+      board[i]=g.curplayer
+      for k=1:NUM_CELLS
+        !shoots[k] && continue
         tmp[i,j,k]=true
       end
     end
   end
-  return mask
+  return mask[PRECOMPUTED_MASK]
 end
 
 function GI.play!(g::GameEnv, a)
+  #first map from the compressed representation to the full representation,
+  #then map from 1 based index to 0 based index
+  a = NON_ZERO_LOCS[a]
   a = a - 1
   source = a % NUM_CELLS
   tmp = (a-source)÷NUM_CELLS
@@ -216,9 +229,6 @@ function GI.white_reward(g::GameEnv)
   return 0.
 end
 
-pos_of_xy((x, y)) = (y - 1) * NUM_COLS + (x - 1) + 1
-
-xy_of_pos(pos) = ((pos - 1) % NUM_COLS + 1, (pos - 1) ÷ NUM_COLS + 1)
 
 
 function generate_dihedral_symmetries()
@@ -290,6 +300,7 @@ function GI.render(g::GameEnv; with_position_names=true, botmargin=true)
 end
 
 function GI.action_string(::GameSpec, a)
+  a = NON_ZERO_LOCS[a]
   a = a - 1
   source = a % NUM_CELLS
   tmp = (a-source)÷NUM_CELLS
